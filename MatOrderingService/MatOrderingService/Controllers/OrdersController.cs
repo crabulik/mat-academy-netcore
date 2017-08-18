@@ -10,6 +10,7 @@ using AutoMapper;
 using Dapper;
 using MatOrderingService.Domain;
 using Microsoft.AspNetCore.Authorization;
+using MatOrderingService.Exceptions;
 
 namespace MatOrderingService.Controllers
 {
@@ -55,7 +56,7 @@ namespace MatOrderingService.Controllers
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
             if (order == null)
             {
-                return NotFound();
+                throw new EntityNotFoundException();
             }
             return Ok(_mapper.Map<OrderInfo>(order));
         }
@@ -91,7 +92,7 @@ namespace MatOrderingService.Controllers
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
             if (order == null)
             {
-                return NotFound();
+                throw new EntityNotFoundException();
             }
             order.OrderDetails = value.OrderDetails;
             await _context.SaveChangesAsync();
@@ -111,7 +112,7 @@ namespace MatOrderingService.Controllers
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
             if(order == null)
             {
-                return NotFound();
+                throw new EntityNotFoundException();
             }
             order.IsDeleted = true;
             await _context.SaveChangesAsync();

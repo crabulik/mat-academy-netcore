@@ -19,11 +19,13 @@ using MatOrderingService.Services.Swagger;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using MatOrderingService.Services.Storage.Impl;
+using MatOrderingService.Services.Generator;
+using MatOrderingService.Services.Generator.Impl;
+using MatOrderingService.Filters;
 
 namespace MatOrderingService
 {
-    //TODO: Exception Handler
-    //TODO: Base IService Impl
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -49,7 +51,10 @@ namespace MatOrderingService
                     .ConfigureWarnings(warnings => warnings.Log(RelationalEventId.QueryClientEvaluationWarning)));
 
             services.AddCors();
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(typeof(EntityNotFoundExceptionFilter));
+            });
 
             services.AddAutoMapper();
 
@@ -71,6 +76,8 @@ namespace MatOrderingService
             });
 
             services.AddSingleton<IConfiguration>(Configuration);
+            services.AddTransient<IGuidGenerator, GuidGenerator>();
+            services.AddSingleton<IOrdersList, OrdersList>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
