@@ -14,12 +14,16 @@ using AutoMapper;
 using Microsoft.Extensions.PlatformAbstractions;
 using System.IO;
 using MatOrderingService.Services.Auth;
+using MatOrderingService.Services.Logger;
 using MatOrderingService.Services.Swagger;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace MatOrderingService
 {
+    //TODO: Exception Handler
+    //TODO: Base IService Impl
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -65,6 +69,8 @@ namespace MatOrderingService
                     .AddAuthenticationSchemes(Configuration.GetValue<string>("AuthOptions:AuthenticationScheme"))
                     .RequireAuthenticatedUser().Build();
             });
+
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,12 +86,52 @@ namespace MatOrderingService
 
             app.UseMiddleware<MatOsAuthMiddleware>();
 
+            app.UseMiddleware<RequestLoggerMiddleware>();
+
             app.UseMvc();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Materialise Academy Orders API");
+            });
+
+            app.Map("/env", HandleEnvInfo);
+
+            app.Use(async (context, next) =>
+            {
+                await context.Response.WriteAsync("Mat prefix: ");
+                await next.Invoke();
+            });
+
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Hello from MAT ordering service");
+            });
+
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("How can you see me????");
+            });
+        }
+
+        private static void HandleEnvInfo(IApplicationBuilder app)
+        {
+            app.Map("/info", Info);
+
+            app.Run(async context =>
+            {
+                var srv = (IConfiguration)context.RequestServices.GetService(typeof(IConfiguration));
+                await context.Response.WriteAsync(srv.GetValue<string>("EnvironmentInfo"));
+            });
+        }
+
+        private static void Info(IApplicationBuilder app)
+        {
+
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Deep Info");
             });
         }
     }
