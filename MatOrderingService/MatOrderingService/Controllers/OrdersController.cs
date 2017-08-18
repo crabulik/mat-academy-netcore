@@ -7,10 +7,13 @@ using MatOrderingService.Models;
 using MatOrderingService.Services.Storage;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using Dapper;
 using MatOrderingService.Domain;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MatOrderingService.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     public class OrdersController : Controller
     {
@@ -113,6 +116,41 @@ namespace MatOrderingService.Controllers
             order.IsDeleted = true;
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        /// <summary>
+        /// Retrieves Order's statistic
+        /// </summary>
+        [HttpGet("statistic")]
+        [ProducesResponseType(typeof(OrdersStatisticItem[]), 200)]
+        public async Task<IActionResult> GetStatistic()
+        {
+            var ordersStatisticItems = await _context
+                .Orders
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted)
+                .GroupBy(g => g.CreatorId)
+                .Select(p => new OrdersStatisticItem { CreatorId = p.Key, NumberOfOrders = p.Count() })
+                .ToArrayAsync();
+            return Ok(ordersStatisticItems);
+        }
+
+        /// <summary>
+        /// Retrieves Order's statistic with dapper
+        /// </summary>
+        [HttpGet("statistic/dapper")]
+        [ProducesResponseType(typeof(OrdersStatisticItem[]), 200)]
+        public async Task<IActionResult> GetStatisticDapper()
+        {
+            using (var connection = _context.Database.GetDbConnection())
+            {
+                var ordersStatisticItems = await connection.QueryAsync<OrdersStatisticItem>(@"
+                    SELECT CreatorId, COUNT(*) AS NumberOfOrders
+                    FROM Orders
+                    GROUP BY CreatorId;
+                ");
+                return Ok(ordersStatisticItems);
+            }            
         }
     }
 }

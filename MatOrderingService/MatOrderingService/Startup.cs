@@ -13,6 +13,10 @@ using Swashbuckle.AspNetCore.Swagger;
 using AutoMapper;
 using Microsoft.Extensions.PlatformAbstractions;
 using System.IO;
+using MatOrderingService.Services.Auth;
+using MatOrderingService.Services.Swagger;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace MatOrderingService
 {
@@ -34,9 +38,13 @@ namespace MatOrderingService
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString = Configuration.GetValue<string>("Data:ConnectionString");
+
             services.AddDbContext<OrdersDbContext>
                 (options => options.UseSqlServer(
-                    connectionString));
+                    connectionString)
+                    .ConfigureWarnings(warnings => warnings.Log(RelationalEventId.QueryClientEvaluationWarning)));
+
+            services.AddCors();
             services.AddMvc();
 
             services.AddAutoMapper();
@@ -46,6 +54,16 @@ namespace MatOrderingService
                 c.SwaggerDoc("v1", new Info { Title = "Materialise Academy Orders API", Version = "v1" });
                 var filePath = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "MatOrderingService.xml");
                 c.IncludeXmlComments(filePath);
+                c.OperationFilter<SwaggerAuthorizationHeaderParameter>(Configuration.GetValue<string>("AuthOptions:AuthenticationScheme"));
+            });
+
+            services.Configure<MatOsAuthOptions>(Configuration.GetSection("AuthOptions"));
+
+            services.AddAuthorization(auth =>
+            {
+                auth.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes(Configuration.GetValue<string>("AuthOptions:AuthenticationScheme"))
+                    .RequireAuthenticatedUser().Build();
             });
         }
 
@@ -54,6 +72,13 @@ namespace MatOrderingService
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            app.UseCors(options =>
+                options.WithOrigins("*")
+                    .WithHeaders("Content-Type", "x-xsrf-token", "authorization")
+                    .WithMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
+
+            app.UseMiddleware<MatOsAuthMiddleware>();
 
             app.UseMvc();
 
