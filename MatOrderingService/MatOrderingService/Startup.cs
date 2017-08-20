@@ -135,7 +135,6 @@ namespace MatOrderingService
 
         private static void Info(IApplicationBuilder app)
         {
-
             app.Run(async context =>
             {
                 await context.Response.WriteAsync("Deep Info");
