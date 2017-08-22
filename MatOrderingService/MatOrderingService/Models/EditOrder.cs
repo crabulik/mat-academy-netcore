@@ -9,6 +9,7 @@ namespace MatOrderingService.Models
     public class EditOrder
     {
         [Required]
+        [StringLength(500)]
         public string OrderDetails { get; set; }
     }
 }

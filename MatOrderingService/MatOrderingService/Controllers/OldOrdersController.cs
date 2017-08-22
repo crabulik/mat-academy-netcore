@@ -29,6 +29,41 @@ namespace MatOrderingService.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
+        public IActionResult Get()
+        {
+            var orders = _ordersList.GetAllOrders()
+                .Where(p => !p.IsDeleted)
+                .ToArray();
+            return Ok(orders.Select(order => 
+                new OrderInfo{
+                    CreateDate = order.CreateDate,
+                    CreatorId = order.CreatorId,
+                    Id = order.Id,
+                    OrderDetails = order.OrderDetails,
+                    Status = order.Status.ToString()
+                }).ToArray());
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            var order = _ordersList.GetAllOrders()
+                .FirstOrDefault(p => p.Id == id && !p.IsDeleted);
+            if (order == null)
+            {
+                return NotFound();
+            }
+            return Ok(
+                new OrderInfo{
+                    CreateDate = order.CreateDate,
+                    CreatorId = order.CreatorId,
+                    Id = order.Id,
+                    OrderDetails = order.OrderDetails,
+                    Status = order.Status.ToString()
+                });
+        }
+
         [HttpGet("codes")]
         [ProducesResponseType(typeof(string), 200)]
         public IActionResult Get([FromServices]IGuidGenerator methodGenerator)

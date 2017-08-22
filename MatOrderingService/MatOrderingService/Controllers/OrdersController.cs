@@ -68,15 +68,19 @@ namespace MatOrderingService.Controllers
         [ProducesResponseType(typeof(OrderInfo), 200)]
         public async Task<IActionResult> Post([FromBody]NewOrder order)
         {
-            var newOrder = _mapper.Map<Order>(order);
-            newOrder.IsDeleted = false;
-            newOrder.Status = OrderStatus.New;
-            newOrder.CreateDate = DateTime.Now;
+            if (ModelState.IsValid)
+            {
+                var newOrder = _mapper.Map<Order>(order);
+                newOrder.IsDeleted = false;
+                newOrder.Status = OrderStatus.New;
+                newOrder.CreateDate = DateTime.Now;
 
-            _context.Orders.Add(newOrder);
-            await _context.SaveChangesAsync();
+                _context.Orders.Add(newOrder);
+                await _context.SaveChangesAsync();
 
-            return Ok(_mapper.Map<OrderInfo>(newOrder));
+                return Ok(_mapper.Map<OrderInfo>(newOrder));
+            }
+            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -87,16 +91,20 @@ namespace MatOrderingService.Controllers
         [ProducesResponseType(typeof(void), 404)]
         public async Task<IActionResult> Put(int id, [FromBody]EditOrder value)
         {
-            var order = await _context
-                .Orders
-                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
-            if (order == null)
+            if (ModelState.IsValid)
             {
-                throw new EntityNotFoundException();
+                var order = await _context
+                    .Orders
+                    .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+                if (order == null)
+                {
+                    throw new EntityNotFoundException();
+                }
+                order.OrderDetails = value.OrderDetails;
+                await _context.SaveChangesAsync();
+                return Ok(_mapper.Map<OrderInfo>(order));
             }
-            order.OrderDetails = value.OrderDetails;
-            await _context.SaveChangesAsync();
-            return Ok(_mapper.Map<OrderInfo>(order));
+            return BadRequest(ModelState);
         }
 
         /// <summary>
@@ -110,7 +118,7 @@ namespace MatOrderingService.Controllers
             var order = await _context
                 .Orders
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
-            if(order == null)
+            if (order == null)
             {
                 throw new EntityNotFoundException();
             }
@@ -151,7 +159,7 @@ namespace MatOrderingService.Controllers
                     GROUP BY CreatorId;
                 ");
                 return Ok(ordersStatisticItems);
-            }            
+            }
         }
     }
 }
