@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MatOrderingService.Exceptions;
 
 namespace MatOrderingService.Controllers
 { 
@@ -29,53 +30,13 @@ namespace MatOrderingService.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            var orders = _ordersList.GetAllOrders()
-                .Where(p => !p.IsDeleted)
-                .ToArray();
-            return Ok(orders.Select(order => 
-                new OrderInfo{
-                    CreateDate = order.CreateDate,
-                    CreatorId = order.CreatorId,
-                    Id = order.Id,
-                    OrderDetails = order.OrderDetails,
-                    Status = order.Status.ToString()
-                }).ToArray());
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
-        {
-            var order = _ordersList.GetAllOrders()
-                .FirstOrDefault(p => p.Id == id && !p.IsDeleted);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            return Ok(
-                new OrderInfo{
-                    CreateDate = order.CreateDate,
-                    CreatorId = order.CreatorId,
-                    Id = order.Id,
-                    OrderDetails = order.OrderDetails,
-                    Status = order.Status.ToString()
-                });
-        }
-
         [HttpGet("codes")]
-        [ProducesResponseType(typeof(string), 200)]
         public IActionResult Get([FromServices]IGuidGenerator methodGenerator)
         {
             return Ok($"OldOrdersController ID: {_generator.Generate()}. Method ID: {methodGenerator.Generate()}");
         }
 
-        /// <summary>
-        /// Retrieves an array of all orders
-        /// </summary>
         [HttpGet]
-        [ProducesResponseType(typeof(OrderInfo[]), 200)]
         public IActionResult Get()
         {
             var orders = _ordersList.GetAllOrders()
@@ -84,28 +45,19 @@ namespace MatOrderingService.Controllers
             return Ok(orders.Select(order => _mapper.Map<OrderInfo>(order)).ToArray());
         }
 
-        /// <summary>
-        /// Retrieves a specific Order by unique id
-        /// </summary>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(OrderInfo), 200)]
-        [ProducesResponseType(typeof(void), 404)]
         public IActionResult Get(int id)
         {
             var order = _ordersList.GetAllOrders()
                 .FirstOrDefault(p => p.Id == id && !p.IsDeleted);
             if (order == null)
             {
-                return NotFound();
+                throw new EntityNotFoundException();
             }
             return Ok(_mapper.Map<OrderInfo>(order));
         }
 
-        /// <summary>
-        /// Creates a new Order
-        /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(OrderInfo), 200)]
         public IActionResult Post([FromBody]NewOrder order)
         {
             var newOrder = _mapper.Map<Order>(order);
@@ -120,12 +72,7 @@ namespace MatOrderingService.Controllers
             return Ok(_mapper.Map<OrderInfo>(newOrder));
         }
 
-        /// <summary>
-        /// Updates an Order's Details by unique id
-        /// </summary>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(OrderInfo), 200)]
-        [ProducesResponseType(typeof(void), 404)]
         public IActionResult Put(int id, [FromBody]EditOrder value)
         {
             var order = _ordersList.GetAllOrders()
@@ -138,12 +85,7 @@ namespace MatOrderingService.Controllers
             return Ok(_mapper.Map<OrderInfo>(order));
         }
 
-        /// <summary>
-        /// Deletes an Order by unique id
-        /// </summary>
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(void), 204)]
-        [ProducesResponseType(typeof(void), 404)]
         public IActionResult Delete(int id)
         {
             var order = _ordersList.GetAllOrders()

@@ -41,7 +41,7 @@ namespace MatOrderingService.Services.Auth
             }
             else
             {
-                return await Task.FromResult(AuthenticateResult.Skip());
+                return await Task.FromResult(AuthenticateResult.Fail("Incorrect key."));
             }
         }
     }

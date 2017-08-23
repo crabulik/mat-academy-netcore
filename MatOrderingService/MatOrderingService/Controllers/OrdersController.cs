@@ -86,6 +86,10 @@ namespace MatOrderingService.Controllers
         /// <summary>
         /// Updates an Order's Details by unique id
         /// </summary>
+        /// <param name="id">ID of the updated order</param>
+        /// <param name="value">New properties of the order</param>
+        /// <response code="200">Order created</response>
+        /// <response code="404">Order is not found</response>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(OrderInfo), 200)]
         [ProducesResponseType(typeof(void), 404)]

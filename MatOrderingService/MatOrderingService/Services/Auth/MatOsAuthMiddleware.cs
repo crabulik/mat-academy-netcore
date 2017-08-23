@@ -9,7 +9,8 @@ namespace MatOrderingService.Services.Auth
 {
     public class MatOsAuthMiddleware : AuthenticationMiddleware<MatOsAuthOptions>
     {
-        public MatOsAuthMiddleware(RequestDelegate next, IOptions<MatOsAuthOptions> options, ILoggerFactory loggerFactory, UrlEncoder encoder) : base(next, options, loggerFactory, encoder)
+        public MatOsAuthMiddleware(RequestDelegate next, IOptions<MatOsAuthOptions> options, ILoggerFactory loggerFactory, UrlEncoder encoder) 
+            : base(next, options, loggerFactory, encoder)
         {
             if (next == null)
             {
