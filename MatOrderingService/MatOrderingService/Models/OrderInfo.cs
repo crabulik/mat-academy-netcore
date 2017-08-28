@@ -9,7 +9,7 @@ namespace MatOrderingService.Models
     {
         public int Id { get; set; }
 
-        public string OrderDetails { get; set; }
+        public OrderItemValue[] OrderItems { get; set; }
 
         public String Status { get; set; }
 

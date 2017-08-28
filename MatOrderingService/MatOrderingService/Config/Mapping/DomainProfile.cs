@@ -15,6 +15,10 @@ namespace MatOrderingService.Config.Mapping
             CreateMap<NewOrder, Order>();
 
             CreateMap<EditOrder, Order>();
+
+            CreateMap<OrderItemValue, OrderItem>();
+
+            CreateMap<OrderItem, OrderItemValue>();
         }
     }
 }

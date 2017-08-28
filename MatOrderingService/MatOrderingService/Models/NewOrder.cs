@@ -9,8 +9,7 @@ namespace MatOrderingService.Models
     public class NewOrder
     {
         [Required]
-        [StringLength(500)]
-        public string OrderDetails { get; set; }
+        public OrderItemValue[] OrderItems { get; set; }
 
         [Required]
         [StringLength(50)]

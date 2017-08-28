@@ -34,8 +34,9 @@ namespace MatOrderingService.Controllers
         [ProducesResponseType(typeof(OrderInfo[]), 200)]
         public async Task<IActionResult> Get()
         {
-            var orders = await _context
-                .Orders
+            var orders = await _context.Orders
+                .FromSql("SELECT * FROM ORDERS")
+                .Include(i => i.OrderItems)
                 .AsNoTracking()
                 .Where(p => !p.IsDeleted)
                 .ToArrayAsync();
@@ -52,8 +53,10 @@ namespace MatOrderingService.Controllers
         {
             var order = await _context
                 .Orders
-                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+            _context.Entry(order)
+                .Collection(b => b.OrderItems) // .Reference(...)
+                .Load();
             if (order == null)
             {
                 throw new EntityNotFoundException();
@@ -99,12 +102,13 @@ namespace MatOrderingService.Controllers
             {
                 var order = await _context
                     .Orders
+                    .Include(i => i.OrderItems)
                     .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
                 if (order == null)
                 {
                     throw new EntityNotFoundException();
                 }
-                order.OrderDetails = value.OrderDetails;
+                _mapper.Map<EditOrder, Order>(value, order);
                 await _context.SaveChangesAsync();
                 return Ok(_mapper.Map<OrderInfo>(order));
             }

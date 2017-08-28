@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MatOrderingService.Domain
 {
@@ -6,7 +7,7 @@ namespace MatOrderingService.Domain
     {
         public int Id { get; set; }
 
-        public string OrderDetails { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; }
 
         public OrderStatus Status { get; set; }
 

@@ -81,7 +81,7 @@ namespace MatOrderingService.Controllers
             {
                 return NotFound();
             }
-            order.OrderDetails = value.OrderDetails;
+            _mapper.Map<EditOrder, Order>(value, order);
             return Ok(_mapper.Map<OrderInfo>(order));
         }
 

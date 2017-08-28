@@ -18,7 +18,10 @@ namespace MatOrderingService.Services.Storage.Impl
                     CreatorId = "Budy@mail.com",
                     Id = 1,
                     IsDeleted = false,
-                    OrderDetails = "2 statues of Sonic",
+                    OrderItems = new[] {
+                        new OrderItem{Value = "A statue of Sonic"},
+                        new OrderItem{Value = "A statue of Sonic"}
+                    },
                     Status = OrderStatus.Promoted
                 },
                 new Order
@@ -27,7 +30,9 @@ namespace MatOrderingService.Services.Storage.Impl
                     CreatorId = "Budy@mail.com",
                     Id = 2,
                     IsDeleted = false,
-                    OrderDetails = "A cup",
+                    OrderItems = new[] {
+                        new OrderItem{Value = "A cup"},
+                    },
                     Status = OrderStatus.Promoted
                 }
             };
